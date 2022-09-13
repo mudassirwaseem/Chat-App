@@ -4,7 +4,8 @@ import ScrollToBottom from "react-scroll-to-bottom";
 function Chat({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
-  console.log(socket, "socket===>>>");
+
+  console.log(messageList, "messageList");
   const sendMessage = async () => {
     if (currentMessage !== "") {
       const messageData = {
@@ -25,52 +26,84 @@ function Chat({ socket, username, room }) {
 
   useEffect(() => {
     socket.on("receive_message", (data) => {
+      console.log(data, "data=====>>>");
       setMessageList((list) => [...list, data]);
     });
   }, [socket]);
-
+  const valueArr = messageList.map(function (item) {
+    return item.author;
+  });
+  const Users = valueArr.filter(function (item, idx) {
+    return valueArr.indexOf(item) === idx;
+  });
+  console.log(Users, "Users");
   return (
-    <div className="chat-window">
-      <div className="chat-header">
-        <p>Live Chat</p>
-      </div>
-      <div className="chat-body">
-        <ScrollToBottom className="message-container">
-          {messageList.map((messageContent) => {
-            return (
-              <div
-                className="message"
-                id={username === messageContent.author ? "you" : "other"}
-              >
-                <div>
-                  <div className="message-content">
-                    <p>{messageContent.message}</p>
+    <>
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 20,
+        }}
+      >
+        <h1>Users:</h1>
+        {Users.map((messageContent) => {
+          return (
+            <div>
+              <ul>
+                <li>
+                  <div className="">
+                    {/* <p id="author">{messageContent.author}</p> */}
+                    <p id="author">{messageContent}</p>
                   </div>
-                  <div className="message-meta">
-                    <p id="time">{messageContent.time}</p>
-                    <p id="author">{messageContent.author}</p>
+                </li>
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      <div className="chat-window">
+        <div className="chat-header">
+          <p>Live Chat</p>
+        </div>
+        <div className="chat-body">
+          <ScrollToBottom className="message-container">
+            {messageList.map((messageContent) => {
+              return (
+                <div
+                  className="message"
+                  id={username === messageContent.author ? "other" : "you"}
+                >
+                  <div>
+                    <div className="message-content">
+                      <p>{messageContent.message}</p>
+                    </div>
+                    <div className="message-meta">
+                      <p id="time">{messageContent.time}</p>
+                      <p id="author">{messageContent.author}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </ScrollToBottom>
+              );
+            })}
+          </ScrollToBottom>
+        </div>
+        <div className="chat-footer">
+          <input
+            type="text"
+            value={currentMessage}
+            placeholder="Hey..."
+            onChange={(event) => {
+              setCurrentMessage(event.target.value);
+            }}
+            onKeyPress={(event) => {
+              event.key === "Enter" && sendMessage();
+            }}
+          />
+          <button onClick={sendMessage}>&#9658;</button>
+        </div>
       </div>
-      <div className="chat-footer">
-        <input
-          type="text"
-          value={currentMessage}
-          placeholder="Hey..."
-          onChange={(event) => {
-            setCurrentMessage(event.target.value);
-          }}
-          onKeyPress={(event) => {
-            event.key === "Enter" && sendMessage();
-          }}
-        />
-        <button onClick={sendMessage}>&#9658;</button>
-      </div>
-    </div>
+    </>
   );
 }
 
